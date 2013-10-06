@@ -417,4 +417,13 @@ public class DbHelper{
 			s.onDatabaseError(mErrorMessage);
 		}
 	}
+	
+	public SQLiteDatabase getDatabase(){
+		if(mAppDbHelper != null){
+			return mAppDbHelper.getDatabase();
+		}else if(mSDCardDbHelper != null){
+			return mSDCardDbHelper.getDatabase();
+		}
+		return null;
+	}
 }
