@@ -60,7 +60,12 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 	}
 
 	private SQLiteSelectType mSelectType = SQLiteSelectType.String;
-
+	
+	public SQLiteSelectStatement() {
+		super(SQLiteStatmentType.Select);
+		setSQLiteSelectType(SQLiteSelectType.String);
+	}
+	
 	public SQLiteSelectStatement(SQLiteSelectType type) {
 		super(SQLiteStatmentType.Select);
 		setSQLiteSelectType(type);
@@ -116,7 +121,27 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 		}
 		return true;
 	}
+	
+	@Override
+	public void setQuery(String query){
+		super.setQuery(query);
+	}
+	
+	@Override
+	public String getQuery(){
+		return super.getQuery();
+	}
 
+	@Override
+	public void setArguments(String... arguments) {
+		super.setArguments(arguments);
+	}
+
+	@Override
+	public String[] getArguments() {
+		return super.getArguments();
+	}
+	
 	public void execute(SQLiteDatabase db) {
 		db.beginTransaction();
 		Cursor c = db.rawQuery(this.getQuery(), this.getArguments());

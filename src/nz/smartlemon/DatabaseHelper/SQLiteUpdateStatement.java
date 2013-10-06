@@ -64,6 +64,46 @@ public class SQLiteUpdateStatement extends SQLiteStatement {
 		onUpdateResult(updatedCount);
 	}
 
+	@Override
+	public void setTable(String table) {
+		super.setTable(table);
+	}
+
+	@Override
+	public String getTable() {
+		return super.getTable();
+	}
+
+	@Override
+	public void setContentValues(ContentValues values) {
+		super.setContentValues(values);
+	}
+
+	@Override
+	public ContentValues getContentValues() {
+		return super.getContentValues();
+	}
+
+	@Override
+	public void setWhereClause(String whereClause) {
+		super.setWhereClause(whereClause);
+	}
+
+	@Override
+	public String getWhereClause() {
+		return super.getWhereClause();
+	}
+
+	@Override
+	public void setArguments(String... arguments) {
+		super.setArguments(arguments);
+	}
+
+	@Override
+	public String[] getArguments() {
+		return super.getArguments();
+	}
+
 	public void execute(SQLiteDatabase db) {
 		db.beginTransaction();
 		int updatedCount = db.update(this.getTable(), this.getContentValues(),

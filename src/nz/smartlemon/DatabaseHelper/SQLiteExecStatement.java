@@ -28,6 +28,16 @@ public class SQLiteExecStatement extends SQLiteStatement {
 	public SQLiteExecStatement(String query) {
 		super(SQLiteStatmentType.Exec, query);
 	}
+	
+	@Override
+	public void setQuery(String query){
+		super.setQuery(query);
+	}
+	
+	@Override
+	public String getQuery(){
+		return super.getQuery();
+	}
 
 	public void execute(SQLiteDatabase db) {
 		db.beginTransaction();

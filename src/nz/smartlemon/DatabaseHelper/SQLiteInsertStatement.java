@@ -58,7 +58,37 @@ public class SQLiteInsertStatement extends SQLiteStatement {
 	public void returnResult(long insertedId){
 		onInsertResult(insertedId);
 	}
-
+	
+	@Override
+	public void setTable(String table){
+		super.setTable(table);
+	}
+	
+	@Override
+	public String getTable(){
+		return super.getTable();
+	}
+	
+	@Override
+	public void setNullColumnHack(String column){
+		super.setNullColumnHack(column);
+	}
+	
+	@Override
+	public String getNullColumnHack(){
+		return super.getNullColumnHack();
+	}
+	
+	@Override
+	public void setContentValues(ContentValues values){
+		super.setContentValues(values);
+	}
+	
+	@Override
+	public ContentValues getContentValues(){
+		return super.getContentValues();
+	}
+	
 	public void execute(SQLiteDatabase db){
 		db.beginTransaction();
 		long insertedId = db.insert(this.getTable(), this.getNullColumnHack(), this.getContentValues());

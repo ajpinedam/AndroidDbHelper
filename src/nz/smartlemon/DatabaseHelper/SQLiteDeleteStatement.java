@@ -65,7 +65,37 @@ public class SQLiteDeleteStatement extends SQLiteStatement {
 	public void returnResult(int deletedCount) {
 		onDeleteResult(deletedCount);
 	}
+	
+	@Override
+	public void setTable(String table) {
+		super.setTable(table);
+	}
 
+	@Override
+	public String getTable() {
+		return super.getTable();
+	}
+
+	@Override
+	public void setWhereClause(String whereClause) {
+		super.setWhereClause(whereClause);
+	}
+
+	@Override
+	public String getWhereClause() {
+		return super.getWhereClause();
+	}
+
+	@Override
+	public void setArguments(String... arguments) {
+		super.setArguments(arguments);
+	}
+
+	@Override
+	public String[] getArguments() {
+		return super.getArguments();
+	}
+	
 	public void execute(SQLiteDatabase db) {
 		db.beginTransaction();
 		int deletedCount = db.delete(this.getTable(), this.getWhereClause(),
