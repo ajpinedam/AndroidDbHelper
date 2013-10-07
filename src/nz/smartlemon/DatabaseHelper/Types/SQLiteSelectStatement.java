@@ -1,8 +1,7 @@
-package nz.smartlemon.DatabaseHelper;
+package nz.smartlemon.DatabaseHelper.Types;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;

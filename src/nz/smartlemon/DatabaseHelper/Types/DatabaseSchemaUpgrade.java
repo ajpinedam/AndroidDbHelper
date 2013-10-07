@@ -1,4 +1,4 @@
-package nz.smartlemon.DatabaseHelper;
+package nz.smartlemon.DatabaseHelper.Types;
 
 public class DatabaseSchemaUpgrade {
 	public int UpgradeVersion = 0;

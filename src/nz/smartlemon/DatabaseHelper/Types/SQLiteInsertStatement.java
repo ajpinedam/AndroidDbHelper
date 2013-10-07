@@ -1,4 +1,4 @@
-package nz.smartlemon.DatabaseHelper;
+package nz.smartlemon.DatabaseHelper.Types;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;

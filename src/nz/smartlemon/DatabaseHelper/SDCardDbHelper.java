@@ -1,5 +1,6 @@
 package nz.smartlemon.DatabaseHelper;
 
+import nz.smartlemon.DatabaseHelper.Types.DatabaseSchemaUpgrade;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.util.Log;

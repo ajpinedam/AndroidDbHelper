@@ -1,4 +1,4 @@
-package nz.smartlemon.DatabaseHelper;
+package nz.smartlemon.DatabaseHelper.Types;
 
 public class DatabaseSchema {
 	public int Version = 1;

@@ -1,6 +1,5 @@
-package nz.smartlemon.DatabaseHelper;
+package nz.smartlemon.DatabaseHelper.Types;
 
-import nz.smartlemon.DatabaseHelper.SQLiteInsertStatement.OnResultListener;
 import android.database.sqlite.SQLiteDatabase;
 
 public class SQLiteExecStatement extends SQLiteStatement {

@@ -3,14 +3,22 @@ package nz.smartlemon.DatabaseHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.database.Cursor;
+import nz.smartlemon.DatabaseHelper.Types.DatabaseSchema;
+import nz.smartlemon.DatabaseHelper.Types.DatabaseSchema.DatabaseLocation;
+import nz.smartlemon.DatabaseHelper.Types.SQLiteDeleteStatement;
+import nz.smartlemon.DatabaseHelper.Types.SQLiteExecStatement;
+import nz.smartlemon.DatabaseHelper.Types.SQLiteInsertStatement;
+import nz.smartlemon.DatabaseHelper.Types.SQLiteSelectStatement;
+import nz.smartlemon.DatabaseHelper.Types.SQLiteUpdateStatement;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
-import nz.smartlemon.DatabaseHelper.DatabaseSchema.DatabaseLocation;
-
 public class DbHelper{
+	
+	public void CreateTable(Class<?> cls){
 
+	}
+	
 	public interface OnDatabaseLoadedListener {
 		public abstract void onDatabaseLoaded();
 		public abstract void onDatabaseError(String error);
