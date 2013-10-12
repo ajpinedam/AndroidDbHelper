@@ -22,15 +22,15 @@ class SQLiteStatement {
 		}
 	}
 
-	protected SQLiteStatmentType mType = SQLiteStatmentType.Exec;
+	private SQLiteStatmentType mType = SQLiteStatmentType.Exec;
 
-	protected String[] mArguments = new String[0];
-	protected String mQuery = null;
-	protected String mTable = null;
-	protected ContentValues mContentValues = new ContentValues();
-	protected UUID mQueryID = null;
-	protected String mWhereClause = null;
-	protected String mNullColumnHack = null;
+	private String[] mArguments = new String[0];
+	private String mQuery = null;
+	private String mTable = null;
+	private ContentValues mContentValues = new ContentValues();
+	private UUID mQueryID = null;
+	private String mWhereClause = null;
+	private String mNullColumnHack = null;
 
 	protected SQLiteStatement(SQLiteStatmentType type) {
 		mType = type;

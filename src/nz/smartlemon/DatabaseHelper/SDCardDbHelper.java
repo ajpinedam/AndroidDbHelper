@@ -7,6 +7,19 @@ import android.util.Log;
 
 class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 
+	private OnSDCardDbHelperRequestListener mRequestListener = null;
+
+	protected interface OnSDCardDbHelperRequestListener {
+		abstract void onRequestOpen();
+
+		abstract boolean onRequestClose();
+	}
+
+	protected void setOnSDCardDbHelperRequestListener(
+			OnSDCardDbHelperRequestListener listener) {
+		mRequestListener = listener;
+	}
+
 	private String[] mCreateScripts = new String[0];
 	private DatabaseSchemaUpgrade[] mUpdateScripts = new DatabaseSchemaUpgrade[0];
 
@@ -24,6 +37,9 @@ class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 	}
 
 	public void open() {
+		if (mRequestListener != null) {
+			mRequestListener.onRequestOpen();
+		}
 		if (mWritable != null) {
 			if (!mWritable.isOpen()) {
 				mWritable = this.getWritableDatabase();
@@ -35,20 +51,28 @@ class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 
 	@Override
 	public void close() {
-		if (mWritable != null) {
-			if (mWritable.isOpen()) {
-				if (mWritable.inTransaction()) {
-					mWritable.endTransaction();
-					Log.w("DatabaseHelper", "Transaction forcefully stopped!");
-				}
-				mWritable.close();
-			}
+		boolean close = true;
+		if (mRequestListener != null) {
+			close = mRequestListener.onRequestClose();
 		}
-		super.close();
+		if (close) {
+			if (mWritable != null) {
+				if (mWritable.isOpen()) {
+					if (mWritable.inTransaction()) {
+						mWritable.endTransaction();
+						Log.w("DatabaseHelper",
+								"Transaction forcefully stopped!");
+					}
+					mWritable.close();
+				}
+			}
+			super.close();
+		}
 	}
 
 	public SDCardDbHelper(String dir, String name, CursorFactory factory,
-			int version, String[] createScripts, DatabaseSchemaUpgrade[] updateScripts) {
+			int version, String[] createScripts,
+			DatabaseSchemaUpgrade[] updateScripts) {
 		super(dir, name, factory, version);
 		mCreateScripts = createScripts;
 		mUpdateScripts = updateScripts;
@@ -66,17 +90,18 @@ class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 		boolean createPost = false;
 		if (mUpdateScripts != null) {
 			for (DatabaseSchemaUpgrade script : mUpdateScripts) {
-				if(script.UpgradeVersion <= newVersion && oldVersion < script.UpgradeVersion){
-					if(!createPost && script.CreatePost){
+				if (script.UpgradeVersion <= newVersion
+						&& oldVersion < script.UpgradeVersion) {
+					if (!createPost && script.CreatePost) {
 						createPost = true;
 					}
-					for(String s : script.OnUpgradeScripts){
+					for (String s : script.OnUpgradeScripts) {
 						db.execSQL(s);
 					}
 				}
 			}
 		}
-		if(createPost){
+		if (createPost) {
 			this.onCreate(db);
 		}
 	}

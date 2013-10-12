@@ -7,9 +7,9 @@ import java.lang.annotation.Target;
 
 import nz.smartlemon.DatabaseHelper.Types.SQLiteConstants;
 
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SQLiteTable {
-	public String TableName() default "[unassigned]";
-	public boolean Async() default SQLiteConstants.DEFAULT_BOOLEAN_TABLE_ASYNC;
+public @interface SQLitePrimaryKey {
+	public String ColumnName() default SQLiteConstants.DEFAULT_STRING_PRIMARY_KEY_COLUMN_NAME;
+	public boolean AutoIncrement() default SQLiteConstants.DEFAULT_BOOLEAN_AUTO_INCREMENT;
 }

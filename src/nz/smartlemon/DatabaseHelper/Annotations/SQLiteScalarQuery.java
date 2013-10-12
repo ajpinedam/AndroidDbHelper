@@ -5,11 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import nz.smartlemon.DatabaseHelper.Types.SQLiteConstants;
-
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SQLiteTable {
-	public String TableName() default "[unassigned]";
-	public boolean Async() default SQLiteConstants.DEFAULT_BOOLEAN_TABLE_ASYNC;
+public @interface SQLiteScalarQuery {
+	public String Query();
+	public String[] Parameters();
 }

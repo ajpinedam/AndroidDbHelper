@@ -3,8 +3,10 @@ package nz.smartlemon.DatabaseHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import nz.smartlemon.DatabaseHelper.ApplicationDataDbHelper.OnApplicationDataDbHelperRequestListener;
+import nz.smartlemon.DatabaseHelper.SDCardDbHelper.OnSDCardDbHelperRequestListener;
+import nz.smartlemon.DatabaseHelper.Types.DatabaseLocation;
 import nz.smartlemon.DatabaseHelper.Types.DatabaseSchema;
-import nz.smartlemon.DatabaseHelper.Types.DatabaseSchema.DatabaseLocation;
 import nz.smartlemon.DatabaseHelper.Types.SQLiteDeleteStatement;
 import nz.smartlemon.DatabaseHelper.Types.SQLiteExecStatement;
 import nz.smartlemon.DatabaseHelper.Types.SQLiteInsertStatement;
@@ -13,35 +15,32 @@ import nz.smartlemon.DatabaseHelper.Types.SQLiteUpdateStatement;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
-public class DbHelper{
-	
-	public void CreateTable(Class<?> cls){
+public class DbHelper implements OnApplicationDataDbHelperRequestListener,
+		OnSDCardDbHelperRequestListener {
 
-	}
-	
 	public interface OnDatabaseLoadedListener {
 		public abstract void onDatabaseLoaded();
 		public abstract void onDatabaseError(String error);
 	}
-	
+
 	private boolean mAsynchronous = true;
-	
-	public boolean isAsynchronous(){
+
+	public boolean isAsynchronous() {
 		return mAsynchronous;
 	}
-	
-	public void setAsynchronous(boolean asynchronous){
+
+	public void setAsynchronous(boolean asynchronous) {
 		mAsynchronous = asynchronous;
 	}
-	
-	public boolean isAsync(){
+
+	public boolean isAsync() {
 		return isAsynchronous();
 	}
-	
-	public void setAsync(boolean async){
+
+	public void setAsync(boolean async) {
 		setAsynchronous(async);
 	}
-	
+
 	private boolean mError = false;
 	private String mErrorMessage = null;
 	private boolean mLoaded = false;
@@ -49,11 +48,14 @@ public class DbHelper{
 	private List<OnDatabaseLoadedListener> mOnDatabaseLoadedListeners = new ArrayList<OnDatabaseLoadedListener>();
 
 	public void setOnDatabaseLoadedListener(OnDatabaseLoadedListener listener) {
-		if(!mOnDatabaseLoadedListeners.contains(listener)){
+		if (listener == null) {
+			return;
+		}
+		if (!mOnDatabaseLoadedListeners.contains(listener)) {
 			mOnDatabaseLoadedListeners.add(listener);
-			if(mLoaded && !mError){
+			if (mLoaded && !mError) {
 				listener.onDatabaseLoaded();
-			}else if(mError){
+			} else if (mError) {
 				listener.onDatabaseError(mErrorMessage);
 			}
 		}
@@ -64,16 +66,71 @@ public class DbHelper{
 	private ApplicationDataDbHelper mAppDbHelper = null;
 	private SDCardDbHelper mSDCardDbHelper = null;
 
-	public DbHelper(DatabaseSchema schema) {
+	private static List<DbHelper> mInstances = new ArrayList<DbHelper>();
+
+	public static DbHelper getInstance(DatabaseSchema schema,
+			OnDatabaseLoadedListener listener) {
+		DbHelper instance = getInstance(schema);
+		instance.setOnDatabaseLoadedListener(listener);
+		return instance;
+	}
+
+	public static DbHelper getInstance(DatabaseSchema schema, boolean async,
+			OnDatabaseLoadedListener listener) {
+		DbHelper instance = getInstance(schema, async);
+		instance.setOnDatabaseLoadedListener(listener);
+		return instance;
+	}
+
+	public static DbHelper getInstance(DatabaseSchema schema, boolean async) {
+		DbHelper instance = getInstance(schema);
+		instance.setAsync(async);
+		return instance;
+	}
+
+	public static DbHelper getInstance(DatabaseSchema schema) {
+		// Only one instance for each database can exist at each time
+		// Otherwise you will get a database lock
+		DbHelper instance = null;
+		for (DbHelper helper : mInstances) {
+			if (helper.getSchema().equals(schema)) {
+				instance = helper;
+				break;
+			} else {
+				DatabaseSchema a = helper.getSchema();
+				DatabaseSchema b = schema;
+				if (a.Name.equals(b.Name)) {
+					if (a.Location.equals(b.Location)) {
+						if (a.Directory.equals(b.Location)) {
+							instance = helper;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (instance == null) {
+			instance = new DbHelper(schema);
+			mInstances.add(instance);
+		}
+		return instance;
+	}
+
+	private DatabaseSchema getSchema() {
+		return mSchema;
+	}
+
+	private DbHelper(DatabaseSchema schema) {
 		this(schema, true, null);
 	}
-	
-	public DbHelper(DatabaseSchema schema, OnDatabaseLoadedListener listener) {
+
+	private DbHelper(DatabaseSchema schema, OnDatabaseLoadedListener listener) {
 		this(schema, true, listener);
 	}
 
-	public DbHelper(DatabaseSchema schema, boolean async, OnDatabaseLoadedListener listener) {
-		if(listener != null){
+	private DbHelper(DatabaseSchema schema, boolean async,
+			OnDatabaseLoadedListener listener) {
+		if (listener != null) {
 			this.setOnDatabaseLoadedListener(listener);
 		}
 		mAsynchronous = async;
@@ -92,22 +149,23 @@ public class DbHelper{
 					mAppDbHelper = new ApplicationDataDbHelper(schema.Context,
 							schema.Name, schema.CursorFactory, schema.Version,
 							schema.OnCreateScrips, schema.OnUpgradeScripts);
-					mAppDbHelper.open();
+					mAppDbHelper
+							.setOnApplicationDataDbHelperRequestListener(this);
 				} else {
 					mSDCardDbHelper = new SDCardDbHelper(schema.Directory,
 							schema.Name, schema.CursorFactory, schema.Version,
 							schema.OnCreateScrips, schema.OnUpgradeScripts);
-					mSDCardDbHelper.open();
+					mSDCardDbHelper.setOnSDCardDbHelperRequestListener(this);
 				}
 			}
-			if(mErrorMessage == null){
+			if (mErrorMessage == null) {
 				onDatabaseLoaded();
-			}else{
+			} else {
 				onDatabaseError();
 			}
 		}
 	}
-	
+
 	public boolean isOpen() {
 		if (mAppDbHelper != null) {
 			return mAppDbHelper.isOpen();
@@ -116,6 +174,15 @@ public class DbHelper{
 			return mSDCardDbHelper.isOpen();
 		}
 		return false;
+	}
+
+	public void open() {
+		if (mAppDbHelper != null) {
+			mAppDbHelper.open();
+		}
+		if (mSDCardDbHelper != null) {
+			mSDCardDbHelper.open();
+		}
 	}
 
 	public void close() {
@@ -131,18 +198,11 @@ public class DbHelper{
 		if (!mLoaded || mError) {
 			return;
 		}
-		if(isAsync()){
+		if (isAsync()) {
 			AsyncExecuteSelectStatement exec = new AsyncExecuteSelectStatement();
-			exec.mAsyncAppDbHelper = mAppDbHelper;
-			exec.mAsyncSDCardDbHelper = mSDCardDbHelper;
 			exec.execute(statements);
-		}else{
-			SQLiteDatabase db = null;
-			if (mAppDbHelper != null) {
-				db = mAppDbHelper.getDatabase();
-			} else if (mSDCardDbHelper != null) {
-				db = mSDCardDbHelper.getDatabase();
-			}
+		} else {
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteSelectStatement s : statements) {
 				s.execute(db);
@@ -156,18 +216,11 @@ public class DbHelper{
 		if (!mLoaded || mError) {
 			return;
 		}
-		if(isAsync()){
+		if (isAsync()) {
 			AsyncExecuteUpdateStatement exec = new AsyncExecuteUpdateStatement();
-			exec.mAsyncAppDbHelper = mAppDbHelper;
-			exec.mAsyncSDCardDbHelper = mSDCardDbHelper;
 			exec.execute(statements);
-		}else{
-			SQLiteDatabase db = null;
-			if (mAppDbHelper != null) {
-				db = mAppDbHelper.getDatabase();
-			} else if (mSDCardDbHelper != null) {
-				db = mSDCardDbHelper.getDatabase();
-			}
+		} else {
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteUpdateStatement s : statements) {
 				s.execute(db);
@@ -181,18 +234,11 @@ public class DbHelper{
 		if (!mLoaded || mError) {
 			return;
 		}
-		if(isAsync()){
+		if (isAsync()) {
 			AsyncExecuteInsertStatement exec = new AsyncExecuteInsertStatement();
-			exec.mAsyncAppDbHelper = mAppDbHelper;
-			exec.mAsyncSDCardDbHelper = mSDCardDbHelper;
 			exec.execute(statements);
-		}else{
-			SQLiteDatabase db = null;
-			if (mAppDbHelper != null) {
-				db = mAppDbHelper.getDatabase();
-			} else if (mSDCardDbHelper != null) {
-				db = mSDCardDbHelper.getDatabase();
-			}
+		} else {
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteInsertStatement s : statements) {
 				s.execute(db);
@@ -206,18 +252,11 @@ public class DbHelper{
 		if (!mLoaded || mError) {
 			return;
 		}
-		if(isAsync()){
+		if (isAsync()) {
 			AsyncExecuteDeleteStatement exec = new AsyncExecuteDeleteStatement();
-			exec.mAsyncAppDbHelper = mAppDbHelper;
-			exec.mAsyncSDCardDbHelper = mSDCardDbHelper;
 			exec.execute(statements);
-		}else{
-			SQLiteDatabase db = null;
-			if (mAppDbHelper != null) {
-				db = mAppDbHelper.getDatabase();
-			} else if (mSDCardDbHelper != null) {
-				db = mSDCardDbHelper.getDatabase();
-			}
+		} else {
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteDeleteStatement s : statements) {
 				s.execute(db);
@@ -231,18 +270,11 @@ public class DbHelper{
 		if (!mLoaded || mError) {
 			return;
 		}
-		if(isAsync()){
+		if (isAsync()) {
 			AsyncExecuteExecStatement exec = new AsyncExecuteExecStatement();
-			exec.mAsyncAppDbHelper = mAppDbHelper;
-			exec.mAsyncSDCardDbHelper = mSDCardDbHelper;
 			exec.execute(statements);
-		}else{
-			SQLiteDatabase db = null;
-			if (mAppDbHelper != null) {
-				db = mAppDbHelper.getDatabase();
-			} else if (mSDCardDbHelper != null) {
-				db = mSDCardDbHelper.getDatabase();
-			}
+		} else {
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteExecStatement s : statements) {
 				s.execute(db);
@@ -255,17 +287,9 @@ public class DbHelper{
 	private class AsyncExecuteSelectStatement extends
 			AsyncTask<SQLiteSelectStatement, Boolean, Boolean> {
 
-		private ApplicationDataDbHelper mAsyncAppDbHelper = null;
-		private SDCardDbHelper mAsyncSDCardDbHelper = null;
-
 		@Override
 		protected Boolean doInBackground(SQLiteSelectStatement... params) {
-			SQLiteDatabase db = null;
-			if (mAsyncAppDbHelper != null) {
-				db = mAsyncAppDbHelper.getDatabase();
-			} else if (mAsyncSDCardDbHelper != null) {
-				db = mAsyncSDCardDbHelper.getDatabase();
-			}
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteSelectStatement s : params) {
 				s.execute(db);
@@ -279,17 +303,9 @@ public class DbHelper{
 	private class AsyncExecuteUpdateStatement extends
 			AsyncTask<SQLiteUpdateStatement, Boolean, Boolean> {
 
-		private ApplicationDataDbHelper mAsyncAppDbHelper = null;
-		private SDCardDbHelper mAsyncSDCardDbHelper = null;
-
 		@Override
 		protected Boolean doInBackground(SQLiteUpdateStatement... params) {
-			SQLiteDatabase db = null;
-			if (mAsyncAppDbHelper != null) {
-				db = mAsyncAppDbHelper.getDatabase();
-			} else if (mAsyncSDCardDbHelper != null) {
-				db = mAsyncSDCardDbHelper.getDatabase();
-			}
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteUpdateStatement s : params) {
 				s.execute(db);
@@ -302,18 +318,10 @@ public class DbHelper{
 
 	private class AsyncExecuteInsertStatement extends
 			AsyncTask<SQLiteInsertStatement, Boolean, Boolean> {
-
-		private ApplicationDataDbHelper mAsyncAppDbHelper = null;
-		private SDCardDbHelper mAsyncSDCardDbHelper = null;
-
+		
 		@Override
 		protected Boolean doInBackground(SQLiteInsertStatement... params) {
-			SQLiteDatabase db = null;
-			if (mAsyncAppDbHelper != null) {
-				db = mAsyncAppDbHelper.getDatabase();
-			} else if (mAsyncSDCardDbHelper != null) {
-				db = mAsyncSDCardDbHelper.getDatabase();
-			}
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteInsertStatement s : params) {
 				s.execute(db);
@@ -327,17 +335,9 @@ public class DbHelper{
 	private class AsyncExecuteDeleteStatement extends
 			AsyncTask<SQLiteDeleteStatement, Boolean, Boolean> {
 
-		private ApplicationDataDbHelper mAsyncAppDbHelper = null;
-		private SDCardDbHelper mAsyncSDCardDbHelper = null;
-
 		@Override
 		protected Boolean doInBackground(SQLiteDeleteStatement... params) {
-			SQLiteDatabase db = null;
-			if (mAsyncAppDbHelper != null) {
-				db = mAsyncAppDbHelper.getDatabase();
-			} else if (mAsyncSDCardDbHelper != null) {
-				db = mAsyncSDCardDbHelper.getDatabase();
-			}
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteDeleteStatement s : params) {
 				s.execute(db);
@@ -351,17 +351,9 @@ public class DbHelper{
 	private class AsyncExecuteExecStatement extends
 			AsyncTask<SQLiteExecStatement, Boolean, Boolean> {
 
-		private ApplicationDataDbHelper mAsyncAppDbHelper = null;
-		private SDCardDbHelper mAsyncSDCardDbHelper = null;
-
 		@Override
 		protected Boolean doInBackground(SQLiteExecStatement... params) {
-			SQLiteDatabase db = null;
-			if (mAsyncAppDbHelper != null) {
-				db = mAsyncAppDbHelper.getDatabase();
-			} else if (mAsyncSDCardDbHelper != null) {
-				db = mAsyncSDCardDbHelper.getDatabase();
-			}
+			SQLiteDatabase db = getDatabase();
 			db.beginTransaction();
 			for (SQLiteExecStatement s : params) {
 				s.execute(db);
@@ -403,9 +395,9 @@ public class DbHelper{
 		protected void onPostExecute(Boolean result) {
 			mAppDbHelper = mAsyncAppDbHelper;
 			mSDCardDbHelper = mAsyncSDCardDbHelper;
-			if(result){
+			if (result) {
 				onDatabaseLoaded();
-			}else{
+			} else {
 				onDatabaseError();
 			}
 		}
@@ -414,24 +406,34 @@ public class DbHelper{
 	public void onDatabaseLoaded() {
 		mLoaded = true;
 		mError = false;
-		for(OnDatabaseLoadedListener s : mOnDatabaseLoadedListeners){
+		for (OnDatabaseLoadedListener s : mOnDatabaseLoadedListeners) {
 			s.onDatabaseLoaded();
 		}
 	}
 
 	public void onDatabaseError() {
 		mError = true;
-		for(OnDatabaseLoadedListener s : mOnDatabaseLoadedListeners){
+		for (OnDatabaseLoadedListener s : mOnDatabaseLoadedListeners) {
 			s.onDatabaseError(mErrorMessage);
 		}
 	}
-	
-	public SQLiteDatabase getDatabase(){
-		if(mAppDbHelper != null){
+
+	public SQLiteDatabase getDatabase() {
+		if (mAppDbHelper != null) {
 			return mAppDbHelper.getDatabase();
-		}else if(mSDCardDbHelper != null){
+		} else if (mSDCardDbHelper != null) {
 			return mSDCardDbHelper.getDatabase();
 		}
 		return null;
+	}
+
+	@Override
+	public void onRequestOpen() {
+
+	}
+
+	@Override
+	public boolean onRequestClose() {
+		return false;
 	}
 }

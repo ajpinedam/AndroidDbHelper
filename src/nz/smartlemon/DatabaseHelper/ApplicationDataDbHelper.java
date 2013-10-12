@@ -9,23 +9,39 @@ import android.util.Log;
 
 class ApplicationDataDbHelper extends SQLiteOpenHelper {
 
+	private OnApplicationDataDbHelperRequestListener mRequestListener = null;
+
+	protected interface OnApplicationDataDbHelperRequestListener {
+		abstract void onRequestOpen();
+
+		abstract boolean onRequestClose();
+	}
+
+	protected void setOnApplicationDataDbHelperRequestListener(
+			OnApplicationDataDbHelperRequestListener listener) {
+		mRequestListener = listener;
+	}
+
 	private String[] mCreateScripts = new String[0];
 	private DatabaseSchemaUpgrade[] mUpdateScripts = new DatabaseSchemaUpgrade[0];
 
 	private SQLiteDatabase mWritable = null;
 
-	public SQLiteDatabase getDatabase(){
-		if(mWritable == null){
+	public SQLiteDatabase getDatabase() {
+		if (mWritable == null) {
 			this.open();
 		}
 		return mWritable;
 	}
-	
-	public boolean isOpen(){
+
+	public boolean isOpen() {
 		return mWritable != null && mWritable.isOpen();
 	}
-	
+
 	public void open() {
+		if (mRequestListener != null) {
+			mRequestListener.onRequestOpen();
+		}
 		if (mWritable != null) {
 			if (!mWritable.isOpen()) {
 				mWritable = this.getWritableDatabase();
@@ -37,16 +53,24 @@ class ApplicationDataDbHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void close() {
-		if (mWritable != null) {
-			if (mWritable.isOpen()) {
-				if (mWritable.inTransaction()) {
-					mWritable.endTransaction();
-					Log.w("DatabaseHelper", "Transaction forcefully stopped!");
-				}
-				mWritable.close();
-			}
+		boolean close = true;
+		if (mRequestListener != null) {
+			close = mRequestListener.onRequestClose();
 		}
-		super.close();
+		if (close) {
+			if (mWritable != null) {
+				if (mWritable.isOpen()) {
+					if (mWritable.inTransaction()) {
+						mWritable.endTransaction();
+						Log.w("DatabaseHelper",
+								"Transaction forcefully stopped!");
+					}
+					mWritable.close();
+				}
+				mWritable = null;
+			}
+			super.close();
+		}
 	}
 
 	public ApplicationDataDbHelper(Context context, String name,
@@ -71,17 +95,18 @@ class ApplicationDataDbHelper extends SQLiteOpenHelper {
 		boolean createPost = false;
 		if (mUpdateScripts != null) {
 			for (DatabaseSchemaUpgrade script : mUpdateScripts) {
-				if(script.UpgradeVersion <= newVersion && oldVersion < script.UpgradeVersion){
-					if(!createPost && script.CreatePost){
+				if (script.UpgradeVersion <= newVersion
+						&& oldVersion < script.UpgradeVersion) {
+					if (!createPost && script.CreatePost) {
 						createPost = true;
 					}
-					for(String s : script.OnUpgradeScripts){
+					for (String s : script.OnUpgradeScripts) {
 						db.execSQL(s);
 					}
 				}
 			}
 		}
-		if(createPost){
+		if (createPost) {
 			this.onCreate(db);
 		}
 	}

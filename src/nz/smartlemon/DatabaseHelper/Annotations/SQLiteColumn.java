@@ -5,21 +5,30 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import nz.smartlemon.DatabaseHelper.Types.SQLiteConstants;
 import nz.smartlemon.DatabaseHelper.Types.SQLiteType;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SQLiteColumn {
-	public String ColumnName();
-	public SQLiteType ColumnType() default SQLiteType.TEXT;
-	public boolean IsDefaultValue() default false;
-	public String DefaultTextValue() default "";
-	public int DefaultIntValue() default 0;
-	public boolean DefaultBooleanValue() default false;
-	public double DefaultDoubleValue() default 0.0d;
-	public float DefaultFloatValue() default 0.0f;
-	public long DefaultLongValue() default 0L;
-	public byte DefaultByteValue() default 0;
-	public short DefualtShortValue() default 0;
-	public char DefaultCharValue() default '\u0000';
+	/**
+	 * The name of the column, this is defaulted to SQLiteConstants.DEFAULT_STRING_COLUMN_NAME 
+	 */
+	public String ColumnName() default SQLiteConstants.DEFAULT_STRING_COLUMN_NAME;
+	/**
+	 * The column type
+	 */
+	public SQLiteType ColumnType() default SQLiteType.DEFAULT;
+	/**
+	 * Specifies whether the default value is set;
+	 */
+	public boolean HasDefaultValue() default false;
+	/**
+	 * The default value of the column
+	 */
+	public String DefaultValue() default SQLiteConstants.DEFAULT_STRING;
+	/**
+	 * The constraints on the column
+	 */
+	public String Constraints() default "";
 }
