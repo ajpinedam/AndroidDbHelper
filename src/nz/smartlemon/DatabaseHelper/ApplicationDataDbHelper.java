@@ -26,9 +26,10 @@ class ApplicationDataDbHelper extends SQLiteOpenHelper {
 	private DatabaseSchemaUpgrade[] mUpdateScripts = new DatabaseSchemaUpgrade[0];
 
 	private SQLiteDatabase mWritable = null;
-
+	
+	
 	public SQLiteDatabase getDatabase() {
-		if (mWritable == null) {
+		if (!this.isOpen()) {
 			this.open();
 		}
 		return mWritable;
@@ -38,7 +39,7 @@ class ApplicationDataDbHelper extends SQLiteOpenHelper {
 		return mWritable != null && mWritable.isOpen();
 	}
 
-	public void open() {
+	private void open() {
 		if (mRequestListener != null) {
 			mRequestListener.onRequestOpen();
 		}
@@ -51,6 +52,19 @@ class ApplicationDataDbHelper extends SQLiteOpenHelper {
 		}
 	}
 
+	public void closeIfNotInTransaction(){
+		if (mWritable != null) {
+			if (mWritable.isOpen()) {
+				if (mWritable.inTransaction()) {
+					return;
+				}
+				mWritable.close();
+			}
+			mWritable = null;
+		}
+		super.close();
+	}
+	
 	@Override
 	public void close() {
 		boolean close = true;
@@ -58,19 +72,24 @@ class ApplicationDataDbHelper extends SQLiteOpenHelper {
 			close = mRequestListener.onRequestClose();
 		}
 		if (close) {
-			if (mWritable != null) {
-				if (mWritable.isOpen()) {
-					if (mWritable.inTransaction()) {
-						mWritable.endTransaction();
-						Log.w("DatabaseHelper",
-								"Transaction forcefully stopped!");
-					}
-					mWritable.close();
-				}
-				mWritable = null;
-			}
-			super.close();
+			this.forceClose();
 		}
+	}
+	
+	
+	private void forceClose(){
+		if (mWritable != null) {
+			if (mWritable.isOpen()) {
+				if (mWritable.inTransaction()) {
+					mWritable.endTransaction();
+					Log.w("DatabaseHelper",
+							"Transaction forcefully stopped!");
+				}
+				mWritable.close();
+			}
+			mWritable = null;
+		}
+		super.close();
 	}
 
 	public ApplicationDataDbHelper(Context context, String name,

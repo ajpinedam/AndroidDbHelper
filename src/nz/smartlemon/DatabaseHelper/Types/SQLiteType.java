@@ -4,7 +4,7 @@ public enum SQLiteType {
 	//Base types
 	TEXT(null, "TEXT"), INTEGER(null, "INTEGER"), REAL(null, "REAL"), BLOB(null, "BLOB"), NUMERIC(null, "NUMERIC"), NULL(null, "NULL"),
 	//Default
-	DEFAULT(TEXT),
+	DEFAULT(null, "#_DEFAULT_TYPE"),
 	//Secondary types as defined by http://www.sqlite.org/datatype3.html
 	INT(INTEGER), TINYINT(INTEGER), SMALLINT(INTEGER), MEDIUMINT(INTEGER),
 	BIGINT(INTEGER), UNSIGNED_BIG_INT(INTEGER), INT2(INTEGER), INT8(INTEGER),
@@ -45,7 +45,7 @@ public enum SQLiteType {
 	}
 	
 	/**
-	 * Returns the base types SQLite representation
+	 * Returns the base type's SQLite string representation
 	 */
 	@Override
 	public String toString(){

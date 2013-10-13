@@ -7,24 +7,65 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 public class SQLiteSelectStatement extends SQLiteStatement {
+	
+	public Cursor cursorResult(){
+		return (Cursor)mResult;
+	}
+	
+	public String stringResult(){
+		return (String)mResult;
+	}
+	
+	public String[] stringArrayResult(){
+		return (String[])mResult;
+	}
+	
+	public Object result(){
+		return mResult;
+	}
 
+	private Object mResult = null;
+	private boolean mComplete = false;
+	
+	private void onResult(){
+		if(mSelectType.equals(SQLiteSelectType.String)){
+			onStringResult((String)mResult);
+		}else if(mSelectType.equals(SQLiteSelectType.StringArray)){
+			onStringArrayResult((String[])mResult);
+		}else if(mSelectType.equals(SQLiteSelectType.Cursor)){
+			Cursor c = (Cursor)mResult;
+			if(c == null || c.isClosed()){
+				c = null;
+			}
+			onCursorResult(c);
+		}
+	}
+	
 	private void onStringResult(String result) {
+		mComplete = true;
+		mResult = result;
 		if (mOnResultListener != null) {
 			mOnResultListener.onStringResult(this, result);
 		}
 	}
 
 	private void onStringArrayResult(String[] result) {
+		mComplete = true;
+		mResult = result;
 		if (mOnResultListener != null) {
 			mOnResultListener.onStringArrayResult(this, result);
 		}
 	}
 
 	private boolean onCursorResult(Cursor result) {
+		mComplete = true;
+		mResult = result;
 		if (mOnResultListener != null) {
 			return mOnResultListener.onCursorResult(this, result);
 		}
-		return true;
+		//They may want to get the result... therefore we can't close it
+		return false;
+		//return true;
 	}
 
 	public interface OnResultListener {
@@ -42,6 +83,9 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 
 	public void setOnResultListener(OnResultListener listener) {
 		mOnResultListener = listener;
+		if(mComplete){
+			onResult();
+		}
 	}
 
 	public enum SQLiteSelectType {
@@ -85,9 +129,10 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 	}
 
 	public void setSQLiteSelectType(SQLiteSelectType type) {
+		mComplete = false;
 		mSelectType = type;
 	}
-
+	
 	public boolean returnResult(Cursor c) {
 		if (mSelectType.equals(SQLiteSelectType.String)) {
 			String result = null;
@@ -123,6 +168,7 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 	
 	@Override
 	public void setQuery(String query){
+		mComplete = false;
 		super.setQuery(query);
 	}
 	
@@ -133,6 +179,7 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 
 	@Override
 	public void setArguments(String... arguments) {
+		mComplete = false;
 		super.setArguments(arguments);
 	}
 
@@ -141,7 +188,8 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 		return super.getArguments();
 	}
 	
-	public void execute(SQLiteDatabase db) {
+	public SQLiteSelectStatement execute(SQLiteDatabase db) {
+		mComplete = false;
 		db.beginTransaction();
 		Cursor c = db.rawQuery(this.getQuery(), this.getArguments());
 		boolean close = this.returnResult(c);
@@ -150,5 +198,6 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 		}
 		db.setTransactionSuccessful();
 		db.endTransaction();
+		return this;
 	}
 }

@@ -11,4 +11,5 @@ import nz.smartlemon.DatabaseHelper.Types.SQLiteConstants;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SQLiteForeignKey {
 	public String ColumnName() default SQLiteConstants.DEFAULT_STRING_FOREIGN_OBJECT_ID;
+	public String ForeignColumnName() default SQLiteConstants.DEFAULT_STRING_ID;
 }

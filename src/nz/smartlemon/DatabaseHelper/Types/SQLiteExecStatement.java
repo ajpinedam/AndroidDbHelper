@@ -3,8 +3,11 @@ package nz.smartlemon.DatabaseHelper.Types;
 import android.database.sqlite.SQLiteDatabase;
 
 public class SQLiteExecStatement extends SQLiteStatement {
-
+	
+	private boolean mComplete = false;
+	
 	private void onComplete() {
+		mComplete = true;
 		if (mOnCompleteListener != null) {
 			mOnCompleteListener.onComplete(this);
 		}
@@ -18,6 +21,9 @@ public class SQLiteExecStatement extends SQLiteStatement {
 
 	public void setOnCompleteListener(OnCompleteListener listener) {
 		mOnCompleteListener = listener;
+		if(mComplete){
+			onComplete();
+		}
 	}
 
 	public SQLiteExecStatement() {
@@ -39,6 +45,7 @@ public class SQLiteExecStatement extends SQLiteStatement {
 	}
 
 	public void execute(SQLiteDatabase db) {
+		mComplete = false;
 		db.beginTransaction();
 		db.execSQL(this.getQuery());
 		onComplete();

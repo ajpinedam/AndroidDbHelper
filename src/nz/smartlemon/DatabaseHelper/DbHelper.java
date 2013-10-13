@@ -20,6 +20,7 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 
 	public interface OnDatabaseLoadedListener {
 		public abstract void onDatabaseLoaded();
+
 		public abstract void onDatabaseError(String error);
 	}
 
@@ -176,15 +177,11 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		return false;
 	}
 
-	public void open() {
-		if (mAppDbHelper != null) {
-			mAppDbHelper.open();
-		}
-		if (mSDCardDbHelper != null) {
-			mSDCardDbHelper.open();
-		}
-	}
-
+	/**
+	 * This should be called when you no longer want to use the current database
+	 * object. The database will not be re-opened if you do not call this, it
+	 * will simply use the old object. Call this to free up some memory.
+	 */
 	public void close() {
 		if (mAppDbHelper != null) {
 			mAppDbHelper.close();
@@ -194,9 +191,30 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		}
 	}
 
-	public void Execute(SQLiteSelectStatement... statements) {
+	/**
+	 * This will insure that you don't close the database object if it is in a
+	 * transaction by something else, it is recommended to use this method
+	 * instead
+	 */
+	public void closeIfNotInTransaction() {
+		if (mAppDbHelper != null) {
+			mAppDbHelper.closeIfNotInTransaction();
+		}
+		if (mSDCardDbHelper != null) {
+			mSDCardDbHelper.closeIfNotInTransaction();
+		}
+	}
+
+	public SQLiteSelectStatement Execute(SQLiteSelectStatement statement) {
 		if (!mLoaded || mError) {
-			return;
+			return null;
+		}
+		return (SQLiteSelectStatement) Execute(new SQLiteSelectStatement[] { statement })[0];
+	}
+
+	public SQLiteSelectStatement[] Execute(SQLiteSelectStatement... statements) {
+		if (!mLoaded || mError) {
+			return null;
 		}
 		if (isAsync()) {
 			AsyncExecuteSelectStatement exec = new AsyncExecuteSelectStatement();
@@ -209,12 +227,21 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 		}
+		return statements;
 	}
 
-	public void Execute(SQLiteUpdateStatement... statements) {
+	public SQLiteUpdateStatement Execute(SQLiteUpdateStatement statement) {
 		if (!mLoaded || mError) {
-			return;
+			return null;
+		}
+		return (SQLiteUpdateStatement) Execute(new SQLiteUpdateStatement[] { statement })[0];
+	}
+
+	public SQLiteUpdateStatement[] Execute(SQLiteUpdateStatement... statements) {
+		if (!mLoaded || mError) {
+			return null;
 		}
 		if (isAsync()) {
 			AsyncExecuteUpdateStatement exec = new AsyncExecuteUpdateStatement();
@@ -227,12 +254,21 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 		}
+		return statements;
 	}
 
-	public void Execute(SQLiteInsertStatement... statements) {
+	public SQLiteInsertStatement Execute(SQLiteInsertStatement statement) {
 		if (!mLoaded || mError) {
-			return;
+			return null;
+		}
+		return (SQLiteInsertStatement) Execute(new SQLiteInsertStatement[] { statement })[0];
+	}
+
+	public SQLiteInsertStatement[] Execute(SQLiteInsertStatement... statements) {
+		if (!mLoaded || mError) {
+			return null;
 		}
 		if (isAsync()) {
 			AsyncExecuteInsertStatement exec = new AsyncExecuteInsertStatement();
@@ -245,12 +281,21 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 		}
+		return statements;
 	}
 
-	public void Execute(SQLiteDeleteStatement... statements) {
+	public SQLiteDeleteStatement Execute(SQLiteDeleteStatement statement) {
 		if (!mLoaded || mError) {
-			return;
+			return null;
+		}
+		return (SQLiteDeleteStatement) Execute(new SQLiteDeleteStatement[] { statement })[0];
+	}
+
+	public SQLiteDeleteStatement[] Execute(SQLiteDeleteStatement... statements) {
+		if (!mLoaded || mError) {
+			return null;
 		}
 		if (isAsync()) {
 			AsyncExecuteDeleteStatement exec = new AsyncExecuteDeleteStatement();
@@ -263,12 +308,21 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 		}
+		return statements;
 	}
 
-	public void Execute(SQLiteExecStatement... statements) {
+	public SQLiteExecStatement Execute(SQLiteExecStatement statement) {
 		if (!mLoaded || mError) {
-			return;
+			return null;
+		}
+		return (SQLiteExecStatement) Execute(new SQLiteExecStatement[] { statement })[0];
+	}
+
+	public SQLiteExecStatement[] Execute(SQLiteExecStatement... statements) {
+		if (!mLoaded || mError) {
+			return null;
 		}
 		if (isAsync()) {
 			AsyncExecuteExecStatement exec = new AsyncExecuteExecStatement();
@@ -281,7 +335,9 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 		}
+		return statements;
 	}
 
 	private class AsyncExecuteSelectStatement extends
@@ -296,6 +352,7 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 			return true;
 		}
 	}
@@ -312,13 +369,14 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 			return true;
 		}
 	}
 
 	private class AsyncExecuteInsertStatement extends
 			AsyncTask<SQLiteInsertStatement, Boolean, Boolean> {
-		
+
 		@Override
 		protected Boolean doInBackground(SQLiteInsertStatement... params) {
 			SQLiteDatabase db = getDatabase();
@@ -328,6 +386,7 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 			return true;
 		}
 	}
@@ -344,6 +403,7 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 			return true;
 		}
 	}
@@ -360,6 +420,7 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			}
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			closeIfNotInTransaction();
 			return true;
 		}
 	}
@@ -381,12 +442,10 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 				mAsyncAppDbHelper = new ApplicationDataDbHelper(schema.Context,
 						schema.Name, schema.CursorFactory, schema.Version,
 						schema.OnCreateScrips, schema.OnUpgradeScripts);
-				mAsyncAppDbHelper.open();
 			} else {
 				mAsyncSDCardDbHelper = new SDCardDbHelper(schema.Directory,
 						schema.Name, schema.CursorFactory, schema.Version,
 						schema.OnCreateScrips, schema.OnUpgradeScripts);
-				mAsyncSDCardDbHelper.open();
 			}
 			return true;
 		}
@@ -434,6 +493,6 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 
 	@Override
 	public boolean onRequestClose() {
-		return false;
+		return true;
 	}
 }

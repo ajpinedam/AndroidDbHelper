@@ -31,4 +31,20 @@ public @interface SQLiteColumn {
 	 * The constraints on the column
 	 */
 	public String Constraints() default "";
+	/**
+	 * Specifies whether to auto increment the column (Column type needs to be SQLiteType.INTEGER for this)
+	 */
+	boolean AutoIncrement() default SQLiteConstants.DEFAULT_BOOLEAN_COLUMN_AUTO_INCREMENT;
+	/**
+	 * Specifies whether the column is a primary key
+	 */
+	public boolean PrimaryKey() default SQLiteConstants.DEFAULT_BOOLEAN_COLUMN_PRIMARY_KEY;
+	/**
+	 * Specifies whether the column is a integer primary key auto increment
+	 */
+	public boolean IntegerPrimaryKeyAutoIncrement() default SQLiteConstants.DEFAULT_BOOLEAN_COLUMN_INTEGER_PRIMARY_KEY_AUTO_INCREMENT;
+	/**
+	 * Specifies whether the column is a integer primary key
+	 */
+	public boolean IntegerPrimaryKey() default SQLiteConstants.DEFAULT_BOOLEAN_COLUMN_INTEGER_PRIMARY_KEY;
 }

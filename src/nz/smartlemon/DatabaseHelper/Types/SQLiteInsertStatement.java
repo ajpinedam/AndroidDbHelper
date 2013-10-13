@@ -5,7 +5,10 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class SQLiteInsertStatement extends SQLiteStatement {
 
+	private long mInsertedID = -2;
+	
 	private void onInsertResult(long insertedId){
+		mInsertedID = insertedId;
 		if(mOnResultListener != null){
 			mOnResultListener.onInsertResult(this, insertedId);
 		}
@@ -19,6 +22,9 @@ public class SQLiteInsertStatement extends SQLiteStatement {
 	
 	public void setOnResultListener(OnResultListener listener){
 		mOnResultListener = listener;
+		if(mInsertedID != -2){
+			onInsertResult(mInsertedID);
+		}
 	}
 	
 	public SQLiteInsertStatement() {
@@ -90,6 +96,7 @@ public class SQLiteInsertStatement extends SQLiteStatement {
 	}
 	
 	public void execute(SQLiteDatabase db){
+		mInsertedID = -2;
 		db.beginTransaction();
 		long insertedId = db.insert(this.getTable(), this.getNullColumnHack(), this.getContentValues());
 		this.returnResult(insertedId);

@@ -24,9 +24,10 @@ class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 	private DatabaseSchemaUpgrade[] mUpdateScripts = new DatabaseSchemaUpgrade[0];
 
 	private SQLiteDatabase mWritable = null;
-
+	
+	
 	public SQLiteDatabase getDatabase() {
-		if (mWritable == null) {
+		if (!this.isOpen()) {
 			this.open();
 		}
 		return mWritable;
@@ -35,8 +36,8 @@ class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 	public boolean isOpen() {
 		return mWritable != null && mWritable.isOpen();
 	}
-
-	public void open() {
+	
+	private void open() {
 		if (mRequestListener != null) {
 			mRequestListener.onRequestOpen();
 		}
@@ -49,6 +50,19 @@ class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 		}
 	}
 
+	public void closeIfNotInTransaction(){
+		if (mWritable != null) {
+			if (mWritable.isOpen()) {
+				if (mWritable.inTransaction()) {
+					return;
+				}
+				mWritable.close();
+			}
+			mWritable = null;
+		}
+		super.close();
+	}
+	
 	@Override
 	public void close() {
 		boolean close = true;
@@ -56,18 +70,22 @@ class SDCardDbHelper extends SDCardSQLiteOpenHelper {
 			close = mRequestListener.onRequestClose();
 		}
 		if (close) {
-			if (mWritable != null) {
-				if (mWritable.isOpen()) {
-					if (mWritable.inTransaction()) {
-						mWritable.endTransaction();
-						Log.w("DatabaseHelper",
-								"Transaction forcefully stopped!");
-					}
-					mWritable.close();
-				}
-			}
-			super.close();
+			this.forceClose();
 		}
+	}
+	
+	private void forceClose(){
+		if (mWritable != null) {
+			if (mWritable.isOpen()) {
+				if (mWritable.inTransaction()) {
+					mWritable.endTransaction();
+					Log.w("DatabaseHelper",
+							"Transaction forcefully stopped!");
+				}
+				mWritable.close();
+			}
+		}
+		super.close();
 	}
 
 	public SDCardDbHelper(String dir, String name, CursorFactory factory,

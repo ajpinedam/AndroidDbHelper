@@ -9,8 +9,7 @@ import nz.smartlemon.DatabaseHelper.Types.SQLiteConstants;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SQLiteID {
-	public String ColumnName() default SQLiteConstants.DEFAULT_STRING_ID;
-	public boolean AutoIncrement() default SQLiteConstants.DEFAULT_BOOLEAN_ID_AUTO_INCREMENT;
-	boolean PrimaryKey() default SQLiteConstants.DEFAULT_BOOLEAN_ID_PRIMARY_KEY;
+public @interface SQLiteIntegerPrimaryKey {
+	public String ColumnName() default SQLiteConstants.DEFAULT_STRING_PRIMARY_KEY_COLUMN_NAME;
+	public boolean AutoIncrement() default SQLiteConstants.DEFAULT_BOOLEAN_ID_PRIMARY_KEY;
 }

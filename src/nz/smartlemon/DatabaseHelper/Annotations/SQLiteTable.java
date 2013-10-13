@@ -10,6 +10,6 @@ import nz.smartlemon.DatabaseHelper.Types.SQLiteConstants;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SQLiteTable {
-	public String TableName() default "[unassigned]";
-	public boolean Async() default SQLiteConstants.DEFAULT_BOOLEAN_TABLE_ASYNC;
+	public String TableName() default SQLiteConstants.DEFAULT_STRING_TABLE_NAME;
+	boolean Async() default SQLiteConstants.DEFAULT_BOOLEAN_TABLE_ASYNC;
 }
