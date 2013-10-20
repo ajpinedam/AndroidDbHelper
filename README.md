@@ -95,7 +95,8 @@ mDbHelper.open();
 //This will close the database object
 //and stop any transactions if needed
 mDbHelper.close();
-		
+```
+
 If you wish to use the database object yourself you can use
 
 ```java
