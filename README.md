@@ -163,15 +163,14 @@ to create the DbHelper:
 		
 You can change whether to run the scripts in an asynchronous way or a synchronous way
 
-	:::java
+```java
+	//tells us whether the database is running in an asynchronous way or not
+	mDbHelper.isAsync();//This is the same as mDbHelper.isAsynchronous();
 	
-		//tells us whether the database is running in an asynchronous way or not
-		mDbHelper.isAsync();//This is the same as mDbHelper.isAsynchronous();
-		
-		//Default true, sets whether the database should run in an
-		//asynchronous way
-		mDbHelper.setAsync(true);//This is the same as mDbHelper.setAsynchronous(boolean async);
-		
+	//Default true, sets whether the database should run in an
+	//asynchronous way
+	mDbHelper.setAsync(true);//This is the same as mDbHelper.setAsynchronous(boolean async);
+```
 		
 You can specify different things when creating the database helper
 
