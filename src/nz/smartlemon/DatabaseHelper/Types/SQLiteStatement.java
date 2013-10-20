@@ -160,4 +160,8 @@ class SQLiteStatement {
 		}
 		return new String[0];
 	}
+	
+	public SQLiteStatmentType getBaseType(){
+		return mType;
+	}
 }

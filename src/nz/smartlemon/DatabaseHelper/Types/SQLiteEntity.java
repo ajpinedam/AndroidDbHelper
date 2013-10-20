@@ -49,7 +49,7 @@ public abstract class SQLiteEntity {
 	public abstract Object getInstance();
 
 	public void update() {
-		ContentValues values = this.getContentValues();
+		//ContentValues values = this.getContentValues();
 	}
 
 	/**
@@ -67,7 +67,7 @@ public abstract class SQLiteEntity {
 		// ContentValues values = this.getContentValues();
 	}
 
-	private ContentValues getContentValues() {
+	public ContentValues getContentValues() {
 		Object instance = getInstance();
 		if (!instance.getClass().equals(mClass)) {
 			throw new EntityException("The instance given for the table \""
@@ -113,7 +113,7 @@ public abstract class SQLiteEntity {
 							s.append(" DEFAULT(");
 							for(char a : c.DefaultValue.toCharArray()){
 								try{
-									Integer i = Integer.parseInt(String.valueOf(c));
+									Integer i = Integer.parseInt(String.valueOf(a));
 									if(i != null){
 										s.append(String.valueOf(i));
 									}
