@@ -24,7 +24,7 @@ public class MainActivity extends Activity
 		};
 		boolean async = true;
 		DbHelper.OnDatabaseLoadedListener listener = this;
-		mDbHelper = new DbHelper(mSchema, async, listener);
+		mDbHelper = DbHelper.getInstance(mSchema, async, listener);
 	}
 }
 ```
@@ -178,11 +178,11 @@ You can specify different things when creating the database helper
 
 ```java
 //Default constructor 
-DbHelper dbHelper = new DbHelper(DatabaseSchema schema);
+DbHelper dbHelper = DbHelper.getInstance(DatabaseSchema schema);
 
 //Specify a on database load listener
-DbHelper dbHelper = new DbHelper(DatabaseSchema schema, DbHelper.OnDatabaseLoadedListener listener);
+DbHelper dbHelper = DbHelper.getInstance(DatabaseSchema schema, DbHelper.OnDatabaseLoadedListener listener);
 
 //Specify a on database load listener and whether the database is asynchronous
-DbHelper dbHelper = new DbHelper(DatabaseSchema schema, boolean async, DbHelper.OnDatabaseLoadedListener listener);
+DbHelper dbHelper = DbHelper.getInstance(DatabaseSchema schema, boolean async, DbHelper.OnDatabaseLoadedListener listener);
 ```
