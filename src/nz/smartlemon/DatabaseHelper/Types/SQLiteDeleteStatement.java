@@ -1,5 +1,6 @@
 package nz.smartlemon.DatabaseHelper.Types;
 
+import nz.smartlemon.DatabaseHelper.Interfaces.OnSQLiteDeleteResultListener;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -11,14 +12,9 @@ public class SQLiteDeleteStatement extends SQLiteStatement {
 		}
 	}
 
-	public interface OnResultListener {
-		public abstract void onDeleteResult(SQLiteDeleteStatement statement,
-				int deletedCount);
-	}
+	private OnSQLiteDeleteResultListener mOnResultListener = null;
 
-	private OnResultListener mOnResultListener = null;
-
-	public void setOnResultListener(OnResultListener listener) {
+	public void setOnResultListener(OnSQLiteDeleteResultListener listener) {
 		mOnResultListener = listener;
 	}
 

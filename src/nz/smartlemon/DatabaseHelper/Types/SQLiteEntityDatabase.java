@@ -2,9 +2,10 @@ package nz.smartlemon.DatabaseHelper.Types;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import nz.smartlemon.DatabaseHelper.DbHelper;
-import nz.smartlemon.DatabaseHelper.DbHelper.OnDatabaseLoadedListener;
+import nz.smartlemon.DatabaseHelper.Interfaces.OnDatabaseLoadedListener;
 import android.content.Context;
 
 public abstract class SQLiteEntityDatabase implements OnDatabaseLoadedListener {
@@ -103,7 +104,7 @@ public abstract class SQLiteEntityDatabase implements OnDatabaseLoadedListener {
 		//private boolean mDistinct = false;
 		//private int mTop = -1;
 		public SelectStatement where(String whereClause){
-			if(whereClause.toUpperCase().contains("WHERE")){
+			if(whereClause.toUpperCase(Locale.ENGLISH).contains("WHERE")){
 				whereClause = whereClause.replace("WHERE", "").replace("Where", "").replace("where", "");
 			}
 			mStatement.setWhereClause(whereClause);

@@ -5,6 +5,7 @@ import java.util.List;
 
 import nz.smartlemon.DatabaseHelper.ApplicationDataDbHelper.OnApplicationDataDbHelperRequestListener;
 import nz.smartlemon.DatabaseHelper.SDCardDbHelper.OnSDCardDbHelperRequestListener;
+import nz.smartlemon.DatabaseHelper.Interfaces.OnDatabaseLoadedListener;
 import nz.smartlemon.DatabaseHelper.Types.DatabaseLocation;
 import nz.smartlemon.DatabaseHelper.Types.DatabaseSchema;
 import nz.smartlemon.DatabaseHelper.Types.SQLiteDeleteStatement;
@@ -17,12 +18,6 @@ import android.os.AsyncTask;
 
 public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		OnSDCardDbHelperRequestListener {
-
-	public interface OnDatabaseLoadedListener {
-		public abstract void onDatabaseLoaded();
-
-		public abstract void onDatabaseError(String error);
-	}
 
 	private boolean mAsynchronous = true;
 
@@ -117,7 +112,7 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		return instance;
 	}
 
-	private DatabaseSchema getSchema() {
+	public DatabaseSchema getSchema() {
 		return mSchema;
 	}
 
@@ -204,19 +199,18 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			mSDCardDbHelper.closeIfNotInTransaction();
 		}
 	}
-
-	public SQLiteSelectStatement Execute(SQLiteSelectStatement statement) {
+	public SQLiteSelectStatement Execute(boolean async, SQLiteSelectStatement statement) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		return (SQLiteSelectStatement) Execute(new SQLiteSelectStatement[] { statement })[0];
+		return (SQLiteSelectStatement) Execute(async, new SQLiteSelectStatement[] { statement })[0];
 	}
 
-	public SQLiteSelectStatement[] Execute(SQLiteSelectStatement... statements) {
+	public SQLiteSelectStatement[] Execute(boolean async, SQLiteSelectStatement... statements) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		if (isAsync()) {
+		if (async) {
 			AsyncExecuteSelectStatement exec = new AsyncExecuteSelectStatement();
 			exec.execute(statements);
 		} else {
@@ -232,18 +226,18 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		return statements;
 	}
 
-	public SQLiteUpdateStatement Execute(SQLiteUpdateStatement statement) {
+	public SQLiteUpdateStatement Execute(boolean async, SQLiteUpdateStatement statement) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		return (SQLiteUpdateStatement) Execute(new SQLiteUpdateStatement[] { statement })[0];
+		return (SQLiteUpdateStatement) Execute(async, new SQLiteUpdateStatement[] { statement })[0];
 	}
 
-	public SQLiteUpdateStatement[] Execute(SQLiteUpdateStatement... statements) {
+	public SQLiteUpdateStatement[] Execute(boolean async, SQLiteUpdateStatement... statements) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		if (isAsync()) {
+		if (async) {
 			AsyncExecuteUpdateStatement exec = new AsyncExecuteUpdateStatement();
 			exec.execute(statements);
 		} else {
@@ -259,18 +253,18 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		return statements;
 	}
 
-	public SQLiteInsertStatement Execute(SQLiteInsertStatement statement) {
+	public SQLiteInsertStatement Execute(boolean async, SQLiteInsertStatement statement) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		return (SQLiteInsertStatement) Execute(new SQLiteInsertStatement[] { statement })[0];
+		return (SQLiteInsertStatement) Execute(async, new SQLiteInsertStatement[] { statement })[0];
 	}
 
-	public SQLiteInsertStatement[] Execute(SQLiteInsertStatement... statements) {
+	public SQLiteInsertStatement[] Execute(boolean async, SQLiteInsertStatement... statements) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		if (isAsync()) {
+		if (async) {
 			AsyncExecuteInsertStatement exec = new AsyncExecuteInsertStatement();
 			exec.execute(statements);
 		} else {
@@ -286,18 +280,18 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		return statements;
 	}
 
-	public SQLiteDeleteStatement Execute(SQLiteDeleteStatement statement) {
+	public SQLiteDeleteStatement Execute(boolean async, SQLiteDeleteStatement statement) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		return (SQLiteDeleteStatement) Execute(new SQLiteDeleteStatement[] { statement })[0];
+		return (SQLiteDeleteStatement) Execute(async, new SQLiteDeleteStatement[] { statement })[0];
 	}
 
-	public SQLiteDeleteStatement[] Execute(SQLiteDeleteStatement... statements) {
+	public SQLiteDeleteStatement[] Execute(boolean async, SQLiteDeleteStatement... statements) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		if (isAsync()) {
+		if (async) {
 			AsyncExecuteDeleteStatement exec = new AsyncExecuteDeleteStatement();
 			exec.execute(statements);
 		} else {
@@ -313,18 +307,18 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 		return statements;
 	}
 
-	public SQLiteExecStatement Execute(SQLiteExecStatement statement) {
+	public SQLiteExecStatement Execute(boolean async, SQLiteExecStatement statement) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		return (SQLiteExecStatement) Execute(new SQLiteExecStatement[] { statement })[0];
+		return (SQLiteExecStatement) Execute(async, new SQLiteExecStatement[] { statement })[0];
 	}
 
-	public SQLiteExecStatement[] Execute(SQLiteExecStatement... statements) {
+	public SQLiteExecStatement[] Execute(boolean async, SQLiteExecStatement... statements) {
 		if (!mLoaded || mError) {
 			return null;
 		}
-		if (isAsync()) {
+		if (async) {
 			AsyncExecuteExecStatement exec = new AsyncExecuteExecStatement();
 			exec.execute(statements);
 		} else {
@@ -338,6 +332,48 @@ public class DbHelper implements OnApplicationDataDbHelperRequestListener,
 			closeIfNotInTransaction();
 		}
 		return statements;
+	}
+	
+	//No async flags, get it from DbHelper.isAsync()
+	
+	public SQLiteSelectStatement Execute(SQLiteSelectStatement statement) {
+		return this.Execute(isAsync(), statement);
+	}
+
+	public SQLiteSelectStatement[] Execute(SQLiteSelectStatement... statements) {
+		return this.Execute(isAsync(), statements);
+	}
+
+	public SQLiteUpdateStatement Execute(SQLiteUpdateStatement statement) {
+		return this.Execute(isAsync(), statement);
+	}
+
+	public SQLiteUpdateStatement[] Execute(SQLiteUpdateStatement... statements) {
+		return this.Execute(isAsync(), statements);
+	}
+
+	public SQLiteInsertStatement Execute(SQLiteInsertStatement statement) {
+		return this.Execute(isAsync(), statement);
+	}
+
+	public SQLiteInsertStatement[] Execute(SQLiteInsertStatement... statements) {
+		return this.Execute(isAsync(), statements);
+	}
+
+	public SQLiteDeleteStatement Execute(SQLiteDeleteStatement statement) {
+		return this.Execute(isAsync(), statement);
+	}
+
+	public SQLiteDeleteStatement[] Execute(SQLiteDeleteStatement... statements) {
+		return this.Execute(isAsync(), statements);
+	}
+
+	public SQLiteExecStatement Execute(SQLiteExecStatement statement) {
+		return this.Execute(isAsync(), statement);
+	}
+
+	public SQLiteExecStatement[] Execute(SQLiteExecStatement... statements) {
+		return this.Execute(isAsync(), statements);
 	}
 
 	private class AsyncExecuteSelectStatement extends

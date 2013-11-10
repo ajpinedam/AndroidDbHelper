@@ -1,5 +1,6 @@
 package nz.smartlemon.DatabaseHelper.Types;
 
+import nz.smartlemon.DatabaseHelper.Interfaces.OnSQLiteExecCompleteListener;
 import android.database.sqlite.SQLiteDatabase;
 
 public class SQLiteExecStatement extends SQLiteStatement {
@@ -13,13 +14,9 @@ public class SQLiteExecStatement extends SQLiteStatement {
 		}
 	}
 
-	public interface OnCompleteListener {
-		public abstract void onComplete(SQLiteExecStatement statement);
-	}
+	private OnSQLiteExecCompleteListener mOnCompleteListener = null;
 
-	private OnCompleteListener mOnCompleteListener = null;
-
-	public void setOnCompleteListener(OnCompleteListener listener) {
+	public void setOnCompleteListener(OnSQLiteExecCompleteListener listener) {
 		mOnCompleteListener = listener;
 		if(mComplete){
 			onComplete();

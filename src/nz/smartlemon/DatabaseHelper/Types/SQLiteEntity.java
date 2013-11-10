@@ -1,6 +1,8 @@
 package nz.smartlemon.DatabaseHelper.Types;
 
 import java.lang.reflect.Field;
+import java.util.Locale;
+import java.util.UUID;
 
 import nz.smartlemon.DatabaseHelper.Annotations.SQLiteAutoIncrement;
 import nz.smartlemon.DatabaseHelper.Annotations.SQLiteColumn;
@@ -13,6 +15,9 @@ import android.content.ContentValues;
 
 public abstract class SQLiteEntity {
 
+	@SQLiteColumn(ColumnName="UUID")
+	UUID mUUID = UUID.randomUUID();
+	
 	private Long mBaseID = null;
 
 	private Class<? extends SQLiteEntity> mClass = null;
@@ -107,7 +112,7 @@ public abstract class SQLiteEntity {
 			s.append(" ");
 			s.append(c.ColumnConstraints);
 			if(c.DefaultValue != null){
-				if(!c.ColumnConstraints.toUpperCase().contains("DEFAULT(")){
+				if(!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains("DEFAULT(")){
 					if(c.ColumnType != null && c.ColumnType.equals(SQLiteType.INTEGER)){
 						if(c.DefaultValue != null && c.DefaultValue.length() > 0){
 							s.append(" DEFAULT(");
@@ -235,7 +240,7 @@ public abstract class SQLiteEntity {
 				} else {
 					c.ColumnType = SQLiteType.INTEGER;
 				}
-				if (!c.ColumnConstraints.toUpperCase().contains("PRIMARY KEY")) {
+				if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains("PRIMARY KEY")) {
 					c.ColumnConstraints += " PRIMARY KEY";
 				}
 			}
@@ -247,16 +252,16 @@ public abstract class SQLiteEntity {
 				} else {
 					c.ColumnType = SQLiteType.INTEGER;
 				}
-				if (!c.ColumnConstraints.toUpperCase().contains("PRIMARY KEY")) {
+				if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains("PRIMARY KEY")) {
 					c.ColumnConstraints += " PRIMARY KEY";
 				}
-				if (!c.ColumnConstraints.toUpperCase()
+				if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH)
 						.contains("AUTOINCREMENT")) {
 					c.ColumnConstraints += " AUTOINCREMENT";
 				}
 			}
 			if (column.PrimaryKey()) {
-				if (!c.ColumnConstraints.toUpperCase().contains("PRIMARY KEY")) {
+				if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains("PRIMARY KEY")) {
 					c.ColumnConstraints += " PRIMARY KEY";
 				}
 			}
@@ -293,11 +298,11 @@ public abstract class SQLiteEntity {
 					throw new EntityException(
 							"SQLiteForeignKey cannot be present with SQLiteColumn.IntegerPrimaryKeyAutoIncrement");
 				}
-				if (c.ColumnConstraints.toUpperCase().contains("PRIMARY KEY")) {
+				if (c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains("PRIMARY KEY")) {
 					throw new EntityException(
 							"SQLiteForeignKey cannot be present when SQLiteColumn.Constraints contains 'PRIMARY KEY'");
 				}
-				if (c.ColumnConstraints.toUpperCase()
+				if (c.ColumnConstraints.toUpperCase(Locale.ENGLISH)
 						.contains("AUTO INCREMENT")) {
 					throw new EntityException(
 							"SQLiteForeignKey cannot be present when SQLiteColumn.Constraints contains 'AUTO INCREMENT'");
@@ -360,7 +365,7 @@ public abstract class SQLiteEntity {
 							if (a.IntegerPrimaryKey()
 									|| a.IntegerPrimaryKeyAutoIncrement()
 									|| a.PrimaryKey()
-									|| a.Constraints().toUpperCase()
+									|| a.Constraints().toUpperCase(Locale.ENGLISH)
 											.contains("PRIMARY KEY")) {
 								fcolumn = a.ColumnName();
 								break;
@@ -384,7 +389,7 @@ public abstract class SQLiteEntity {
 							if (a.IntegerPrimaryKey()
 									|| a.IntegerPrimaryKeyAutoIncrement()
 									|| a.PrimaryKey()
-									|| a.Constraints().toUpperCase()
+									|| a.Constraints().toUpperCase(Locale.ENGLISH)
 											.contains("PRIMARY KEY")) {
 								fcolumn = a.ColumnName();
 								break;
@@ -424,7 +429,7 @@ public abstract class SQLiteEntity {
 			if (c.ColumnConstraints == null
 					|| c.ColumnConstraints.length() == 0) {
 				c.ColumnConstraints = " PRIMARY KEY";
-			} else if (!c.ColumnConstraints.toUpperCase().contains(
+			} else if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains(
 					"PRIMARY KEY")) {
 				c.ColumnConstraints += " PRIMARY KEY";
 			}
@@ -452,13 +457,13 @@ public abstract class SQLiteEntity {
 				}
 			} else {
 				if (id.PrimaryKey()) {
-					if (!c.ColumnConstraints.toUpperCase().contains(
+					if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains(
 							"PRIMARY KEY")) {
 						c.ColumnConstraints += " PRIMARY KEY";
 					}
 				}
 				if (id.AutoIncrement()) {
-					if (!c.ColumnConstraints.toUpperCase().contains(
+					if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains(
 							"AUTO INCREMENT")) {
 						c.ColumnConstraints += " AUTO INCREMENT";
 					}
@@ -473,11 +478,11 @@ public abstract class SQLiteEntity {
 					|| c.ColumnConstraints.length() == 0) {
 				c.ColumnConstraints = "";
 			}
-			if (!c.ColumnConstraints.toUpperCase().contains("PRIMARY KEY")) {
+			if (!c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains("PRIMARY KEY")) {
 				c.ColumnConstraints += " PRIMARY KEY";
 			}
 			if (pkey.AutoIncrement()
-					&& !c.ColumnConstraints.toUpperCase().contains(
+					&& !c.ColumnConstraints.toUpperCase(Locale.ENGLISH).contains(
 							"AUTOINCREMENT")) {
 				c.ColumnConstraints += " AUTOINCREMENT";
 			}

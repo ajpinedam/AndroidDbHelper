@@ -3,6 +3,7 @@ package nz.smartlemon.DatabaseHelper.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import nz.smartlemon.DatabaseHelper.Interfaces.OnSQLiteSelectResultListener;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -68,20 +69,9 @@ public class SQLiteSelectStatement extends SQLiteStatement {
 		//return true;
 	}
 
-	public interface OnResultListener {
-		public abstract void onStringResult(SQLiteSelectStatement statement,
-				String result);
+	private OnSQLiteSelectResultListener mOnResultListener = null;
 
-		public abstract void onStringArrayResult(
-				SQLiteSelectStatement statement, String[] result);
-
-		public abstract boolean onCursorResult(SQLiteSelectStatement statement,
-				Cursor result);
-	}
-
-	private OnResultListener mOnResultListener = null;
-
-	public void setOnResultListener(OnResultListener listener) {
+	public void setOnResultListener(OnSQLiteSelectResultListener listener) {
 		mOnResultListener = listener;
 		if(mComplete){
 			onResult();

@@ -1,5 +1,6 @@
 package nz.smartlemon.DatabaseHelper.Types;
 
+import nz.smartlemon.DatabaseHelper.Interfaces.OnSQLiteUpdateResultListener;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -11,14 +12,9 @@ public class SQLiteUpdateStatement extends SQLiteStatement {
 		}
 	}
 
-	public interface OnResultListener {
-		public abstract void onUpdateResult(SQLiteUpdateStatement statement,
-				int updatedCount);
-	}
+	private OnSQLiteUpdateResultListener mOnResultListener = null;
 
-	private OnResultListener mOnResultListener = null;
-
-	public void setOnResultListener(OnResultListener listener) {
+	public void setOnResultListener(OnSQLiteUpdateResultListener listener) {
 		mOnResultListener = listener;
 	}
 

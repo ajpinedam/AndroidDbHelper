@@ -1,10 +1,15 @@
 package nz.smartlemon.DatabaseHelper.Types;
 
+import nz.smartlemon.DatabaseHelper.Interfaces.OnSQLiteInsertResultListener;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 
 public class SQLiteInsertStatement extends SQLiteStatement {
 
+	public long getInsertedId(){
+		return mInsertedID;
+	}
+	
 	private long mInsertedID = -2;
 	
 	private void onInsertResult(long insertedId){
@@ -14,13 +19,9 @@ public class SQLiteInsertStatement extends SQLiteStatement {
 		}
 	}
 	
-	public interface OnResultListener{
-		public abstract void onInsertResult(SQLiteInsertStatement statement, long insertedId);
-	}
+	private OnSQLiteInsertResultListener mOnResultListener = null;
 	
-	private OnResultListener mOnResultListener = null;
-	
-	public void setOnResultListener(OnResultListener listener){
+	public void setOnResultListener(OnSQLiteInsertResultListener listener){
 		mOnResultListener = listener;
 		if(mInsertedID != -2){
 			onInsertResult(mInsertedID);
